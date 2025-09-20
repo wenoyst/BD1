@@ -1,0 +1,167 @@
+CREATE TABLE Pessoas 
+( 
+ Nome Completo VARCHAR(n) NOT NULL,  
+ Data de nascimento DATE NOT NULL,  
+ Gênero INT NOT NULL,  
+ CPF VARCHAR(n) NOT NULL,  
+ Email VARCHAR(n),  
+ RG CHAR(n) NOT NULL,  
+ Telefone CHAR(n),  
+ idPessoa INT PRIMARY KEY NOT NULL,  
+ CHECK (CPF > 0 AND Email LIKE '%@%'),
+ UNIQUE (CPF,idPessoa: PK)
+); 
+
+CREATE TABLE Locais 
+( 
+ idLocal INT PRIMARY KEY NOT NULL,  
+ Metragem total INT NOT NULL,  
+ Andar INT NOT NULL,  
+ Descrição CHAR(n),  
+ CHECK (Andar >= 0),
+ UNIQUE (idLocal: PK)
+); 
+
+CREATE TABLE Studios 
+( 
+ idTipoStudio INT PRIMARY KEY,  
+ Capacidade por quarto INT NOT NULL,  
+ Quantidade de quartos INT NOT NULL,  
+ Quantidade de banheiros INT NOT NULL,  
+ CHECK (idTipoStudio >= 0 AND Capacidade por quarto >= 1 AND Quantidade de quartos >= 1 AND Quantidade de banheiros >= 1),
+ UNIQUE (idTipoStudio: PK)
+); 
+
+CREATE TABLE Apartamentos 
+( 
+ idLocal INT NOT NULL,  
+ Número INT,  
+ idTipoStudio INT NOT NULL,  
+ idStudios INT,  
+ CHECK (Número >= 0),
+ UNIQUE (idLocal: FK,Número)
+); 
+
+CREATE TABLE Moradia 
+( 
+ idPessoa INT NOT NULL,  
+ idLocal INT NOT NULL,  
+ Data de entrada DATE NOT NULL,  
+ Data de Saída DATE NOT NULL,  
+ idContrato INT NOT NULL,  
+); 
+
+CREATE TABLE Contratos de Aluguéis 
+( 
+ idPessoa INT NOT NULL,  
+ idLocal INT NOT NULL,  
+ idContrato INT PRIMARY KEY,  
+ Quarto INT,  
+ Valor base aluguel INT NOT NULL,  
+ Data de Contratação DATE NOT NULL,  
+ Data finalização DATE NOT NULL,  
+ Valor base Condominio INT,  
+ CHECK (Quarto >= 0)
+); 
+
+CREATE TABLE Regras 
+( 
+ Valor base INT NOT NULL,  
+ Tipo de infração VARCHAR(n) NOT NULL,  
+ Tolerância INT NOT NULL,  
+ Descrição VARCHAR(n) NOT NULL,  
+ idRegra INT PRIMARY KEY,  
+ UNIQUE (Tipo de infração)
+); 
+
+CREATE TABLE Infrações 
+( 
+ idPessoa INT NOT NULL,  
+ idRegra INT,  
+ idMulta INT PRIMARY KEY,  
+ Data DATE NOT NULL,  
+ Detalhamento VARCHAR(n) NOT NULL,  
+ Tipo INT NOT NULL,  
+ CHECK (Tipo BETWEEN 0 AND 1)
+); 
+
+CREATE TABLE Areas comuns 
+( 
+ idLocal INT NOT NULL,  
+ Nome VARCHAR(n) NOT NULL,  
+ Alugável INT NOT NULL,  
+ Preço base por hora INT NOT NULL,  
+ CHECK (Alugável BETWEEN 0 AND 1),
+ UNIQUE (idLocal: FK)
+); 
+
+CREATE TABLE Reservas 
+( 
+ idPessoa INT NOT NULL,  
+ idLocal INT PRIMARY KEY,  
+ Data de locação DATE NOT NULL,  
+ Quantidade de horas INT NOT NULL,  
+ CHECK (Quantidade de horas BETWEEN 1 AND 240)
+); 
+
+CREATE TABLE Serviços 
+( 
+ Nome VARCHAR(n) NOT NULL,  
+ Tipo de serviço INT PRIMARY KEY,  
+ Preço base INT NOT NULL,  
+ UNIQUE (Nome)
+); 
+
+CREATE TABLE Pedidos de serviços 
+( 
+ Tipo de serviço INT NOT NULL,  
+ idPessoa INT NOT NULL,  
+ idLocal INT NOT NULL,  
+ idPedido INT PRIMARY KEY,  
+ Data do pedido DATE NOT NULL,  
+ Data para ser realizado INT NOT NULL,  
+ Horário do pedido CHAR(n) NOT NULL,  
+ Horário para o pedido ser realizado INT NOT NULL,  
+ Descrição VARCHAR(n) NOT NULL,  
+ UNIQUE (Tipo de serviço: FK)
+); 
+
+CREATE TABLE Cobranças 
+( 
+ idCobranca INT PRIMARY KEY,  
+ Descrição VARCHAR(n) NOT NULL,  
+ Valor INT NOT NULL,  
+ Direção CHAR(n) NOT NULL,  
+ idOrigem INT NOT NULL,  
+ Tipo de origem INT NOT NULL,  
+ Data DATE NOT NULL,  
+ CHECK (Valor > 0 AND Direção BETWEEN 0 AND 1)
+); 
+
+CREATE TABLE Pagamentos 
+( 
+ idCobranca INT NOT NULL,  
+ Data de pagamento INT,  
+ Valor INT NOT NULL,  
+ Forma de pagamento VARCHAR(n) NOT NULL,  
+ CHECK (Valor > 0)
+); 
+
+ALTER TABLE Pessoas ADD FOREIGN KEY(Telefone) REFERENCES undefined (Telefone)
+ALTER TABLE Apartamentos ADD FOREIGN KEY(idLocal) REFERENCES Locais (idLocal)
+ALTER TABLE Apartamentos ADD FOREIGN KEY(idTipoStudio) REFERENCES Studios (idTipoStudio)
+ALTER TABLE Apartamentos ADD FOREIGN KEY(idStudios) REFERENCES Studios (idStudios)
+ALTER TABLE Moradia ADD FOREIGN KEY(idPessoa) REFERENCES Pessoas (idPessoa)
+ALTER TABLE Moradia ADD FOREIGN KEY(idLocal) REFERENCES Apartamentos (idLocal)
+ALTER TABLE Moradia ADD FOREIGN KEY(idContrato) REFERENCES Contratos de Aluguéis (idContrato)
+ALTER TABLE Contratos de Aluguéis ADD FOREIGN KEY(idPessoa) REFERENCES Pessoas (idPessoa)
+ALTER TABLE Contratos de Aluguéis ADD FOREIGN KEY(idLocal) REFERENCES Apartamentos (idLocal)
+ALTER TABLE Infrações ADD FOREIGN KEY(idPessoa) REFERENCES Pessoas (idPessoa)
+ALTER TABLE Infrações ADD FOREIGN KEY(idRegra) REFERENCES Regras (idRegra)
+ALTER TABLE Areas comuns ADD FOREIGN KEY(idLocal) REFERENCES Locais (idLocal)
+ALTER TABLE Reservas ADD FOREIGN KEY(idPessoa) REFERENCES Pessoas (idPessoa)
+ALTER TABLE Reservas ADD FOREIGN KEY(idLocal) REFERENCES Areas comuns (idLocal)
+ALTER TABLE Pedidos de serviços ADD FOREIGN KEY(Tipo de serviço) REFERENCES Serviços (Tipo de serviço)
+ALTER TABLE Pedidos de serviços ADD FOREIGN KEY(idPessoa) REFERENCES Pessoas (idPessoa)
+ALTER TABLE Pedidos de serviços ADD FOREIGN KEY(idLocal) REFERENCES Locais (idLocal)
+ALTER TABLE Pagamentos ADD FOREIGN KEY(idCobranca) REFERENCES Cobranças (idCobranca)
